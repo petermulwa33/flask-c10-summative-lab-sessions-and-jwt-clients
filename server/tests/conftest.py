@@ -13,7 +13,7 @@ def app():
         TESTING=True,
         SQLALCHEMY_DATABASE_URI="sqlite://",
         SECRET_KEY="test-secret-key",
-        JWT_SECRET_KEY="test-jwt-secret-key"
+        JWT_SECRET_KEY="test-jwt-secret-key-at-least-32-bytes-long"
     )
 
     with app.app_context():

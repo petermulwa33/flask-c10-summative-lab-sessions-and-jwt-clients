@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from extensions import db, bcrypt
 
@@ -61,14 +61,14 @@ class Note(db.Model):
     )
 
     created_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc)
     )
 
     updated_at = db.Column(
-        db.DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
     )
 
     # Each note belongs to one user
