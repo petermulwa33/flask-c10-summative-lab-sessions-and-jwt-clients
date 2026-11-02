@@ -266,7 +266,7 @@ The test suite covers:
 - Pagination.
 - Required note fields.
 
-The current test suite contains 17 passing tests.
+The current test suite contains 27 passing tests.
 
 ## Frontend
 
