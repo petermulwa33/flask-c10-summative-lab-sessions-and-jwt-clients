@@ -17,12 +17,27 @@ auth_bp = Blueprint("auth", __name__)
 # -------------------------
 @auth_bp.route("/signup", methods=["POST"])
 def signup():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True)
 
-    username = data.get("username", "").strip()
-    password = data.get("password", "")
-    password_confirmation = data.get("password_confirmation", "")
+    if not isinstance(data, dict):
+        return {"errors": ["Request body must be a valid JSON object"]}, 400
 
+    username = data.get("username")
+    password = data.get("password")
+    password_confirmation = data.get("password_confirmation")
+
+    # Validate data types
+    if not isinstance(username, str):
+        return {"errors": ["Username must be a string"]}, 400
+
+    if not isinstance(password, str):
+        return {"errors": ["Password must be a string"]}, 400
+
+    if not isinstance(password_confirmation, str):
+        return {"errors": ["Password confirmation must be a string"]}, 400
+
+    # Remove unnecessary whitespace from username
+    username = username.strip()
     # Validate required fields
     if not username or not password or not password_confirmation:
         return {"errors": ["All fields are required"]}, 400
@@ -63,11 +78,21 @@ def signup():
 # -------------------------
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True)
 
-    username = data.get("username", "").strip()
-    password = data.get("password", "")
+    if not isinstance(data, dict):
+        return {"errors": ["Request body must be a valid JSON object"]}, 400
 
+    username = data.get("username")
+    password = data.get("password")
+
+    if not isinstance(username, str):
+        return {"errors": ["Username must be a string"]}, 400
+
+    if not isinstance(password, str):
+        return {"errors": ["Password must be a string"]}, 400
+
+    username = username.strip()
     if not username or not password:
         return {"errors": ["Username and password are required"]}, 400
 

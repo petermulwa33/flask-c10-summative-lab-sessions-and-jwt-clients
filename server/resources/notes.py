@@ -54,14 +54,29 @@ def get_notes():
 @jwt_required()
 def create_note():
     user_id = int(get_jwt_identity())
-    data = request.get_json() or {}
 
-    title = data.get("title", "").strip()
-    content = data.get("content", "").strip()
+    data = request.get_json(silent=True)
+
+    # Validate the JSON body
+    if not isinstance(data, dict):
+        return {"errors": ["Request body must be a valid JSON object"]}, 400
+
+    title = data.get("title")
+    content = data.get("content")
+
+    # Validate field types
+    if not isinstance(title, str):
+        return {"errors": ["Title must be a string"]}, 400
+
+    if not isinstance(content, str):
+        return {"errors": ["Content must be a string"]}, 400
+
+    # Remove unnecessary whitespace
+    title = title.strip()
+    content = content.strip()
 
     if not title or not content:
         return {"errors": ["Title and content are required"]}, 400
-
     note = Note(
         title=title,
         content=content,
@@ -105,20 +120,32 @@ def update_note(note_id):
     if not note:
         return {"errors": ["Note not found"]}, 404
 
-    data = request.get_json() or {}
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return {"errors": ["Request body must be a valid JSON object"]}, 400
 
     if "title" in data:
-        title = data["title"].strip() if isinstance(data["title"], str) else ""
+        if not isinstance(data["title"], str):
+            return {"errors": ["Title must be a string"]}, 400
+
+        title = data["title"].strip()
+
         if not title:
             return {"errors": ["Title cannot be empty"]}, 400
+
         note.title = title
 
     if "content" in data:
-        content = data["content"].strip() if isinstance(data["content"], str) else ""
+        if not isinstance(data["content"], str):
+            return {"errors": ["Content must be a string"]}, 400
+
+        content = data["content"].strip()
+
         if not content:
             return {"errors": ["Content cannot be empty"]}, 400
-        note.content = content
 
+        note.content = content
     db.session.commit()
 
     return serialize_note(note), 200

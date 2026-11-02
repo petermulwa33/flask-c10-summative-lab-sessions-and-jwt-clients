@@ -262,3 +262,117 @@ def test_create_note_without_content(client):
     )
 
     assert response.status_code == 400
+
+def test_create_note_with_invalid_json_body(client):
+    token = create_user_and_token(client, "invalid_json_user")
+
+    response = client.post(
+        "/notes",
+        headers={"Authorization": f"Bearer {token}"},
+        json=["Invalid", "body"]
+    )
+
+    assert response.status_code == 400
+
+
+def test_create_note_with_non_string_title(client):
+    token = create_user_and_token(client, "invalid_title_user")
+
+    response = client.post(
+        "/notes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": 12345,
+            "content": "Valid content"
+        }
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"] == ["Title must be a string"]
+
+
+def test_create_note_with_non_string_content(client):
+    token = create_user_and_token(client, "invalid_content_user")
+
+    response = client.post(
+        "/notes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "Valid title",
+            "content": ["Invalid content"]
+        }
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"] == ["Content must be a string"]
+
+
+def test_update_note_with_invalid_json_body(client):
+    token = create_user_and_token(client, "update_invalid_user")
+
+    create_response = client.post(
+        "/notes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "Original title",
+            "content": "Original content"
+        }
+    )
+
+    note_id = create_response.get_json()["id"]
+
+    response = client.patch(
+        f"/notes/{note_id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json=["Invalid", "body"]
+    )
+
+    assert response.status_code == 400
+
+
+def test_update_note_with_non_string_title(client):
+    token = create_user_and_token(client, "update_title_user")
+
+    create_response = client.post(
+        "/notes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "Original title",
+            "content": "Original content"
+        }
+    )
+
+    note_id = create_response.get_json()["id"]
+
+    response = client.patch(
+        f"/notes/{note_id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"title": 12345}
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"] == ["Title must be a string"]
+
+
+def test_update_note_with_non_string_content(client):
+    token = create_user_and_token(client, "update_content_user")
+
+    create_response = client.post(
+        "/notes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "title": "Original title",
+            "content": "Original content"
+        }
+    )
+
+    note_id = create_response.get_json()["id"]
+
+    response = client.patch(
+        f"/notes/{note_id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"content": ["Invalid content"]}
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["errors"] == ["Content must be a string"]
